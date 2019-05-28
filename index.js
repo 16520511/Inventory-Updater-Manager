@@ -43,5 +43,5 @@ app.get('/history', (req, res) => {
     })
 })
 
-
-server.listen(3000 || process.env.PORT, () => { console.log('server is running') });
+const port = process.env.PORT || 3000;
+server.listen(port, () => { console.log('server is running') });
