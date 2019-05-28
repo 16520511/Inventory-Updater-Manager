@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+        <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+     
+  </head>
+  <body>
+    <style>
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: 5%;
+        padding: 15px 5em;
+      }
+      .product-detail-grid {
+        display: grid;
+        grid-template-rows: 150px auto auto;
+        border: 2px solid #ccc;
+      }
+      .product-image {
+        grid-row: 1;
+        padding: 0;
+        text-align: center;
+      }
+
+      .product-image img {
+        height: 100%;
+        max-width: 100%;
+      }
+
+      .product-detail {
+        grid-row: 2;
+      }
+
+      .product-price-change {
+        grid-row: 3;
+      }
+
+      .price-after {
+        color: green;
+        font-weight: bold;
+      }
+
+      .card-image {
+        max-height: 180px;
+      }
+
+      .card-image img {
+        height: 100%;
+      }
+    </style>
+
+  
+    <%- include('navbar'); %>
+    <div class="row" style="padding: 20px 35px;">
+        <% changes.forEach(function(change){ %>
+        <div class="col s12 m3">
+          <div class="card medium">
+            <div class="card-image">
+              <img src="<%= change.img %>">
+              
+            </div>
+            <div class="card-title"><a href="<%= change.link %>"><%= change.name %></a></div>
+            <div class="card-action">
+                Giá: <%= change.priceBefore %> VNĐ => <span class="price-after"><%= change.priceAfter %> VNĐ</span>
+            </div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+      
+
+
+  </body>
+</html>
