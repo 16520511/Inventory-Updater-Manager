@@ -29,12 +29,14 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
-    console.log('this happened');
-    if (req.body.name == "ttdv")
-        ttdvUpdater();
-    else if (req.body.name == "ifitness")
-        ifitnessUpdater();
-    res.json({success: true});
+    if (req.method == "POST") {
+        console.log('this happened');
+        if (req.body.name == "ttdv")
+            ttdvUpdater();
+        else if (req.body.name == "ifitness")
+            ifitnessUpdater();
+        res.json({success: true});
+    }
 })
 
 app.get('/history', (req, res) => {
