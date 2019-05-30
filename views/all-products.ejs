@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+  </head>
+  <body>
+    <style>
+
+      th {
+        text-align: center !important;
+      }
+
+    </style>
+    <%- include('navbar'); %>
+    <div style="padding: 10px 35px;">
+    <table id="products_table" class="table display">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Tên</th>
+          <th scope="col">Giá</th>
+          <th scope="col">Tình trạng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% products.forEach((product, index) => { %>
+          <tr>
+          <th scope="row"><%= index + 1 %></th>
+          <td data-editable="true"><%= product.name %></td>
+          <td><%= product.price %></td>
+          <td><%= product.in_stock %></td>
+          </tr>
+        <%}); %>
+      </tbody>
+      </table>
+      </div>
+      
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/sl-1.3.0/datatables.min.css"/>
+ 
+      <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/sl-1.3.0/datatables.min.js"></script>
+      
+      <script>
+      $(document).ready(function() {
+        $('#products_table').DataTable( {
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+        } );
+        $(".all-products-item").addClass("active");
+      } );
+      </script>
+    </body>
+</html>

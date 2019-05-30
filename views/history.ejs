@@ -1,90 +1,58 @@
 <html>
-    <head>
-        <!-- Compiled and minified CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-
-        <!-- Compiled and minified JavaScript -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-     
+  <head>
+  
   </head>
   <body>
     <style>
-      .products-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-gap: 5%;
-        padding: 15px 5em;
-      }
-      .product-detail-grid {
-        display: grid;
-        grid-template-rows: 150px auto auto;
-        border: 2px solid #ccc;
-      }
-      .product-image {
-        grid-row: 1;
-        padding: 0;
-        text-align: center;
-      }
-
-      .product-image img {
-        height: 100%;
-        max-width: 100%;
-      }
-
-      .product-detail {
-        grid-row: 2;
-      }
-
-      .product-price-change {
-        grid-row: 3;
-      }
 
       .price-after {
         color: green;
         font-weight: bold;
       }
-
-      .card-image {
-        max-height: 180px;
+      .card {
+        height: 495px;
       }
-
-      .card-image img {
-        height: 100%;
+      .card-img-top {
+        max-height: 180px;
+        text-align: center;
       }
     </style>
 
-  
     <%- include('navbar'); %>
-    <div class="row" style="padding: 20px 35px;">
-        <h4 class="center teal-text">Lịch sử Update</h4>
-        <hr>
-        <% changes.forEach(function(change){ %>
-        <div class="col s12 m3">
-          <div class="card large">
-            <div class="card-image">
-              <img src="<%= change.img %>">
-              
-            </div>
-            <div class="card-title"><a href="<%= change.link %>"><%= change.name %></a></div>
-            
-            <div class="card-action">
-                <p>Thời gian: <%= change.time.toLocaleDateString() %>
-                  <%= change.time.getHours() %>:<%= String(change.time.getMinutes()).padStart(2, '0') %>
-                </p>
-                <% if(change.priceBefore != change.priceAfter){ %>
-                  Giá: <%= change.priceBefore %> VNĐ => <span class="price-after"><%= change.priceAfter %> VNĐ</span>
-                  Tình trạng: <% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %>
-                <% } else{ %>  
-                  Tình trạng: <% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %>
-                <% } %>
-                
-            </div>
+    <div style="padding: 10px 35px;">
+    <h3 style="margin-top: 20px;" class="text-center">Lịch sử Update</h3>
+    <hr>
+      <% changes.forEach(function(change, index){ %>
+      <% if((index+1)%4 == 1) { %>
+        <div class="row">
+      <% } %>
+      <div class="col-lg-3 col-sm-12">
+        <div class="card shadow p-3 mb-5 bg-white rounded">
+          <img class="card-img-top" src="<%= change.img %>">
+          <div class="card-body">
+            <h5 class="card-title"><a href="<%= change.link %>"><%= change.name %></a></h5>
           </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Thời gian: <%= change.time.toLocaleDateString() %>
+              <%= change.time.getHours() %>:<%= String(change.time.getMinutes()).padStart(2, '0') %></li>
+              <% if(change.priceBefore != change.priceAfter){ %>
+                <li class="list-group-item">Giá: <%= change.priceBefore %> VNĐ => <span class="price-after"><%= change.priceAfter %> VNĐ</span></li>
+                <li class="list-group-item">Tình trạng: <% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %></li>
+              <% } else{ %>  
+                <li class="list-group-item">Tình trạng: <% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %></li>
+              <% } %>          
+          </ul>
         </div>
-        <% }); %>
       </div>
-      
-
-
+      <% if((index+1)%4 == 0) { %>
+      </div>
+      <% } %>
+      <% }); %>
+    </div>
+    <script>
+        $(document).ready(function() {
+          $(".history-item").addClass("active");
+        } );
+    </script>
   </body>
 </html>

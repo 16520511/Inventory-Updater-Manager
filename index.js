@@ -43,5 +43,32 @@ app.get('/history', (req, res) => {
     });
 })
 
+app.get('/all-products', (req, res) => {
+    // var page = req.query.page;
+    // if(page === undefined) page = 1;
+    // if(page <= 6) {
+    var productList = []
+    WooCommerce.get(`products?per_page=100&page=1`, function(err, data, res1) {
+        productList = productList.concat(JSON.parse(res1));
+        WooCommerce.get(`products?per_page=100&page=2`, function(err, data, res2) {
+            productList = productList.concat(JSON.parse(res2));
+            WooCommerce.get(`products?per_page=100&page=3`, function(err, data, res3) {
+                productList = productList.concat(JSON.parse(res3));
+                WooCommerce.get(`products?per_page=100&page=4`, function(err, data, res4) {
+                    productList = productList.concat(JSON.parse(res4));
+                    WooCommerce.get(`products?per_page=100&page=5`, function(err, data, res5) {
+                        productList = productList.concat(JSON.parse(res5));
+                        WooCommerce.get(`products?per_page=100&page=6`, function(err, data, res6) {
+                            productList = productList.concat(JSON.parse(res6));
+                            res.render("all-products", {products: productList});
+                        });
+                    });
+                });
+            });
+        });
+    });
+    // }
+})
+
 const port = process.env.PORT || 3000;
 server.listen(port, () => { console.log('server is running') });

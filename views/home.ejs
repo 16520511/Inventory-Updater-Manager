@@ -1,11 +1,5 @@
 <html>
   <head>
-        <!-- Compiled and minified CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-
-        <!-- Compiled and minified JavaScript -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-     
   </head>
   <body>
     <style>
@@ -31,18 +25,18 @@
     <div class="row" style="padding: 20px 25px;">
         <div class="col s12 m6">
           <form id="ttdv_form" action="/" method="post">
-            <input class="btn" name="ttdv" type="submit" value="chạy updater ttdv"/>
+            <input class="btn btn-dark" name="ttdv" type="submit" value="chạy updater ttdv"/>
           </form>
       
-          <table id="ttdv_table">
+          <table id="ttdv_table" class="table display">
           </table>
         </div>
         <div class="col s12 m6">
           <form id="ifitness_form" action="/" method="post">
-            <input class="btn" name="ttdv" type="submit" value="chạy updater ifitness"/>
+            <input class="btn btn-dark" name="ttdv" type="submit" value="chạy updater ifitness"/>
           </form>
       
-          <table id="ifitness_table">
+          <table id="ifitness_table" class="table display">
           </table>
         </div>
     </div>
@@ -133,6 +127,9 @@
           $('#ifitness_table').append(row);
           el.scrollTop = el.scrollHeight;
         });
+        $(document).ready(function() {
+          $(".home-item").addClass("active");
+        } );
     </script>
   </body>
 </html>
