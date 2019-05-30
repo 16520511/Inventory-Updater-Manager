@@ -36,7 +36,7 @@ String.prototype.replaceAll = function(search, replacement) {
 
 var sessionId;
 var counter = 0;
-
+var SKUList = []
 var c = new crawler({
     maxConnections: 1,
     callback: (err, res, done) => {
@@ -73,6 +73,12 @@ var c = new crawler({
 
                             productSKU = ChangeViToEng(productSKU);
 
+                            var productInStock;
+                            if($(".in-stock").text() == "Còn hàng")
+                                productInStock = true;
+                            else
+                                productInStock = false;
+
                             counter++;
                             console.log(counter + ": " + productSKU);
 
@@ -86,6 +92,8 @@ var c = new crawler({
                                 productPrice = $(".product-shop").find(".price-block").children().first().text().trim().replaceAll('.', '').replaceAll("Giá Bán:", "").replaceAll(" VNĐ", "");
                             }
 
+                            if(SKUList.indexOf(productSKU) == -1)
+                            {
                             WooCommerce.get(`products?sku=${productSKU}`, function(err, data, res) {
                                 if (err)
                                     console.log(err);
@@ -94,14 +102,23 @@ var c = new crawler({
                                     try {
                                         if(JSON.parse(res).length == 1)
                                         {
-
                                             var product = JSON.parse(res)[0];
-                                            if(product.price != productPrice && product.price != "" && productPrice != "Liên hệ" && productName == product.name)
+                                            if(productName == product.name) {
+                                            SKUList.push(productSKU);
+                                            if(product.price != productPrice && product.price != "" && productPrice != "Liên hệ")
                                             {
-                                                io.sockets.emit('ttdv', {sku: productSKU, name: productName, newPrice: productPrice});
-                                                var data = {
-                                                    regular_price: productPrice
-                                                };
+                                                console.log('first if runs ' + productSKU + ' ' + product.slug);
+                                                if(product.in_stock != productInStock) {
+                                                    io.sockets.emit('ttdv', {sku: productSKU, name: productName, newPrice: productPrice, inStock: productInStock});
+                                                    var data = {
+                                                        regular_price: productPrice,
+                                                        in_stock: productInStock
+                                                }}
+                                                else {
+                                                    io.sockets.emit('ttdv', {sku: productSKU, name: productName, newPrice: productPrice});
+                                                    var data = {
+                                                        regular_price: productPrice
+                                                }}
                                                 WooCommerce.put(`products/${product.id}`, data, function(err, data, res) {
                                                     try {
                                                         var jsonRes = JSON.parse(res);
@@ -111,6 +128,36 @@ var c = new crawler({
                                                         priceBefore: product.price,
                                                         priceAfter: productPrice,
                                                         img: jsonRes.images[0].src,
+                                                        inStock: productInStock,
+                                                        time: Date.now()}, (err, change) => {
+                                                            UpdateSession.findById(sessionId, (err, session) => {
+                                                                if (!err)
+                                                                {
+                                                                    session.changes.push(change);
+                                                                    session.save();
+                                                                }
+                                                            })
+                                                        })
+                                                    } catch(e) {}
+                                                });
+                                            }
+                                            else if(product.in_stock != productInStock) {
+                                                console.log('second if runs ' + productSKU);
+                                                io.sockets.emit('ttdv', {sku: productSKU, name: productName, price: productPrice, inStock: productInStock});
+                                                var data = {
+                                                    in_stock: productInStock,
+                                                }
+                                                WooCommerce.put(`products/${product.id}`, data, function(err, data, res) {
+                                                    try {
+                                                        var jsonRes = JSON.parse(res);
+                                                        console.log(jsonRes);
+                                                        ProductChanges.create({link: jsonRes.permalink, 
+                                                        name: jsonRes.name,
+                                                        sku: productSKU,
+                                                        priceBefore: product.price,
+                                                        priceAfter: productPrice,
+                                                        img: jsonRes.images[0].src,
+                                                        inStock: productInStock,
                                                         time: Date.now()}, (err, change) => {
                                                             UpdateSession.findById(sessionId, (err, session) => {
                                                                 if (!err)
@@ -126,11 +173,12 @@ var c = new crawler({
                                             else {
                                                 io.sockets.emit('ttdv', {sku: productSKU, name: productName, price: productPrice});
                                             }
+                                            }
                                         }
                                     } catch(e)  {}
 
                                 }
-                            });
+                            }); }
                         }
                         done();
                     }

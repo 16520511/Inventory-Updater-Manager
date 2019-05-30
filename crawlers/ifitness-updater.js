@@ -46,7 +46,12 @@ var c = new crawler({
                             var productName = $(".product-title h1").eq(0).text();
                             var productSKU = $(".product-sku span").eq(1).text();
                             var productPrice = $(".product-price span").eq(1).text().replaceAll(",", "").replaceAll("₫", "");
+                            var productCartBtn = $(".btn-cart-products").eq(0).text().trim().replaceAll("\\n", "").replaceAll("\\t", "");
 
+                            if (productCartBtn == "Mua ngay")
+                                var productInStock = true;
+                            else
+                                var productInStock = false;
                             counter++;
                             console.log(counter + ": " + productSKU);
 
@@ -59,12 +64,23 @@ var c = new crawler({
                                         if(JSON.parse(res).length == 1)
                                         {
                                             var product = JSON.parse(res)[0];
-                                            if(product.price != productPrice && productName == product.name)
+                                            if(product.price != productPrice)
                                             {
-                                                io.sockets.emit('ifitness', {sku: productSKU, name: productName, newPrice: productPrice});
-                                                var data = {
-                                                    regular_price: productPrice
-                                                };
+                                                if (product.in_stock != productInStock) {
+                                                    io.sockets.emit('ifitness', {sku: productSKU, name: productName, newPrice: productPrice, inStock: productInStock});
+                                                    var data = {
+                                                        regular_price: productPrice,
+                                                        in_stock: productInStock
+                                                    };
+                                                }
+                                                else {
+                                                    io.sockets.emit('ifitness', {sku: productSKU, name: productName, newPrice: productPrice});
+                                                    var data = {
+                                                        regular_price: productPrice
+                                                    };
+                                                }
+                                                
+
                                                 WooCommerce.put(`products/${product.id}`, data, function(err, data, res) {
                                                     try {
                                                         var jsonRes = JSON.parse(res);
@@ -74,6 +90,34 @@ var c = new crawler({
                                                         priceBefore: product.price,
                                                         priceAfter: productPrice,
                                                         img: jsonRes.images[0].src,
+                                                        time: Date.now()}, (err, change) => {
+                                                            UpdateSession.findById(sessionId, (err, session) => {
+                                                                if (!err)
+                                                                {
+                                                                    session.changes.push(change);
+                                                                    session.save();
+                                                                }
+                                                            })
+                                                        })
+                                                    } catch(e) {}
+                                                });
+                                            }
+                                            else if(product.in_stock != productInStock) {
+                                                io.sockets.emit('ifitness', {sku: productSKU, name: productName, price: productPrice, inStock: productInStock});
+                                                var data = {
+                                                    in_stock: productInStock,
+                                                }
+                                                WooCommerce.put(`products/${product.id}`, data, function(err, data, res) {
+                                                    try {
+                                                        var jsonRes = JSON.parse(res);
+                                                        console.log(jsonRes);
+                                                        ProductChanges.create({link: jsonRes.permalink, 
+                                                        name: jsonRes.name,
+                                                        sku: productSKU,
+                                                        priceBefore: product.price,
+                                                        priceAfter: productPrice,
+                                                        img: jsonRes.images[0].src,
+                                                        inStock: productInStock,
                                                         time: Date.now()}, (err, change) => {
                                                             UpdateSession.findById(sessionId, (err, session) => {
                                                                 if (!err)

@@ -76,14 +76,19 @@
           var el = document.getElementById("ttdv_table");
           var price = '';
           if (data.newPrice !== undefined)
-            price = `<td style="width: 20%; color: red; font-weight: bold;">${data.newPrice}</td>`;
+            price = `<td style="width: 15%; color: red; font-weight: bold;">${data.newPrice}</td>`;
           else
-            price = `<td style="width: 20%;">${data.price}</td>`;
+            price = `<td style="width: 15%;">${data.price}</td>`;
 
+          if (data.inStock === true)
+            var inStock = "Còn hàng";
+          else if (data.inStock === false) var inStock = "Hết hàng";
+          else var inStock = ""; 
           var row = `<tr>
-            <td style="width: 20%;">${data.sku}</td>
-            <td style="width: 60%;">${data.name}</td>
+            <td style="width: 15%;">${data.sku}</td>
+            <td style="width: 50%;">${data.name}</td>
             ${price}
+            <td style="width: 10%; color: red;">${inStock}</td>
             </tr>`;
           $('#ttdv_table').append(row);
           el.scrollTop = el.scrollHeight;
@@ -106,20 +111,24 @@
           });
 
         });
-        var socket = io()
 
         socket.on('ifitness', function(data){
           var el = document.getElementById("ifitness_table");
           var price = '';
           if (data.newPrice !== undefined)
-            price = `<td style="width: 20%; color: red; font-weight: bold;">${data.newPrice}</td>`;
+            price = `<td style="width: 15%; color: red; font-weight: bold;">${data.newPrice}</td>`;
           else
-            price = `<td style="width: 20%;">${data.price}</td>`;
+            price = `<td style="width: 15%;">${data.price}</td>`;
 
+          if (data.inStock === true)
+            var inStock = "Còn hàng";
+          else if (data.inStock === false) var inStock = "Hết hàng";
+          else var inStock = ""; 
           var row = `<tr>
-            <td style="width: 20%;">${data.sku}</td>
-            <td style="width: 60%;">${data.name}</td>
+            <td style="width: 15%;">${data.sku}</td>
+            <td style="width: 50%;">${data.name}</td>
             ${price}
+            <td style="width: 10%; color: red;">${inStock}</td>
             </tr>`;
           $('#ifitness_table').append(row);
           el.scrollTop = el.scrollHeight;

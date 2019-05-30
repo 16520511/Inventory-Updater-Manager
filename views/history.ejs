@@ -56,16 +56,28 @@
   
     <%- include('navbar'); %>
     <div class="row" style="padding: 20px 35px;">
+        <h4 class="center teal-text">Lịch sử Update</h4>
+        <hr>
         <% changes.forEach(function(change){ %>
         <div class="col s12 m3">
-          <div class="card medium">
+          <div class="card large">
             <div class="card-image">
               <img src="<%= change.img %>">
               
             </div>
             <div class="card-title"><a href="<%= change.link %>"><%= change.name %></a></div>
+            
             <div class="card-action">
-                Giá: <%= change.priceBefore %> VNĐ => <span class="price-after"><%= change.priceAfter %> VNĐ</span>
+                <p>Thời gian: <%= change.time.toLocaleDateString() %>
+                  <%= change.time.getHours() %>:<%= String(change.time.getMinutes()).padStart(2, '0') %>
+                </p>
+                <% if(change.priceBefore != change.priceAfter){ %>
+                  Giá: <%= change.priceBefore %> VNĐ => <span class="price-after"><%= change.priceAfter %> VNĐ</span>
+                  Tình trạng: <% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %>
+                <% } else{ %>  
+                  Tình trạng: <% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %>
+                <% } %>
+                
             </div>
           </div>
         </div>

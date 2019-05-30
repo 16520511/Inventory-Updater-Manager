@@ -8,7 +8,8 @@ const productChangesSchema = new Schema({
     priceBefore: String,
     priceAfter: String,
     img: String,
-    time: Date
+    time: Date,
+    inStock: Boolean
 });
 
 module.exports = mongoose.model('ProductChanges', productChangesSchema);

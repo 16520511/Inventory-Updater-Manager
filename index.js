@@ -38,9 +38,9 @@ app.post('/', (req, res) => {
 })
 
 app.get('/history', (req, res) => {
-    ProductChanges.find({}, (err, changes) => {
+    ProductChanges.find({}).sort({time: -1}).exec((err, changes) => {
         res.render('history', {changes: changes});
-    })
+    });
 })
 
 const port = process.env.PORT || 3000;
