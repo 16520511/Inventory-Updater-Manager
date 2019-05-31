@@ -1,18 +1,14 @@
 <!doctype html>
 <html>
   <head>
-
-
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
   </head>
   <body>
     <style>
-
-      th {
+      th, .update-btn {
         text-align: center !important;
       }
-
     </style>
     <%- include('navbar'); %>
     <div style="padding: 10px 35px;">
@@ -20,18 +16,30 @@
       <thead class="thead-dark">
         <tr>
           <th scope="col">#</th>
+          <th scope="col">SKU</th>
           <th scope="col">Tên</th>
           <th scope="col">Giá</th>
           <th scope="col">Tình trạng</th>
+          <th scope="col">Cập nhật</th>
         </tr>
       </thead>
       <tbody>
         <% products.forEach((product, index) => { %>
           <tr>
           <th scope="row"><%= index + 1 %></th>
-          <td data-editable="true"><%= product.name %></td>
-          <td><%= product.price %></td>
-          <td><%= product.in_stock %></td>
+          <td><%= product.sku %></td>
+          <td><%= product.name %></td>
+          <td contenteditable class="price-field"><%= product.price %></td>
+          <td>
+            <% if (product.in_stock === true) { %>
+              Còn hàng
+            <% } else{ %>  
+              Hết hàng
+            <% } %>  
+          </td>
+          <td class="update-btn">
+              <button class="update-click btn btn-dark" data-toggle="popover" title="Thành công" data-content="Sản phẩm đã được cập nhật">Cập nhật</button>
+          </td>
           </tr>
         <%}); %>
       </tbody>
@@ -46,11 +54,39 @@
       
       <script>
       $(document).ready(function() {
-        $('#products_table').DataTable( {
-        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+          $('#products_table').DataTable( {
+          "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+          } );
+          $(".all-products-item").addClass("active");
         } );
-        $(".all-products-item").addClass("active");
-      } );
+
+        $(".price-field").keypress(function(e) {
+          if (e.which < 48 || e.which > 57) e.preventDefault();
+        });
+
+        $(".update-btn").each((index) => {
+          var updateBtn = $(".update-btn").eq(index);
+          var inStock = updateBtn.prev();
+          var price = inStock.prev();
+          var sku = price.prev().prev();
+          
+          var updateClickBtn = $(".update-click").eq(index);
+          // console.log(inStock.text().trim());
+          updateClickBtn.click(() => {
+            $.ajax({
+            url: '/update-single-product',
+            method: 'POST',
+            data: { sku: sku.text(), price: price.text(), inStock: inStock.text().trim() }
+            }).done(function(res) {
+                if (res.success) {
+                updateClickBtn.popover('show');
+                console.log('id from ajax call is', res);
+            } else {
+                console.log('error...ajax');
+                }
+          });
+          })
+        });
       </script>
     </body>
 </html>

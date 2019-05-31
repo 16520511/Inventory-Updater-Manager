@@ -29,12 +29,42 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
-    console.log('this happened');
     if (req.body.name == "ttdv")
         ttdvUpdater();
     else if (req.body.name == "ifitness")
         ifitnessUpdater();
     res.json({success: true});
+})
+
+app.post('/update-single-product', (req, res) => {
+    if(req.body.sku === undefined) res.json({success: false});
+    else if(req.body.inStock != "Còn hàng" && req.body.inStock != "Hết hàng") res.json({success: false});
+    else
+    WooCommerce.get(`products?sku=${req.body.sku}`, function(err, data, result1) {
+        if (err)
+            res.json({success: false});
+        if(result1 !== undefined)
+        {
+            try {
+                if(JSON.parse(result1).length == 1)
+                {
+                    var product = JSON.parse(result1)[0];
+                    var inStock = req.body.inStock == "Còn hàng" ? true : false;
+                    var data = {
+                        regular_price: req.body.price,
+                        in_stock: inStock
+                    }
+                    WooCommerce.put(`products/${product.id}`, data, function(err, data, result2) {
+                        if(err) res.json({success: false});
+                        else {
+                        console.log(result2);
+                        res.json({success: true});
+                        }
+                    });
+                }
+            } catch(e) {res.json({success: false});}
+        }
+    });
 })
 
 app.get('/history', (req, res) => {
@@ -44,9 +74,10 @@ app.get('/history', (req, res) => {
 })
 
 app.get('/all-products', (req, res) => {
-    // var page = req.query.page;
-    // if(page === undefined) page = 1;
-    // if(page <= 6) {
+    res.render("all-products2");
+})
+
+app.post('/get-products', (req, res) => {
     var productList = []
     WooCommerce.get(`products?per_page=100&page=1`, function(err, data, res1) {
         productList = productList.concat(JSON.parse(res1));
@@ -60,14 +91,13 @@ app.get('/all-products', (req, res) => {
                         productList = productList.concat(JSON.parse(res5));
                         WooCommerce.get(`products?per_page=100&page=6`, function(err, data, res6) {
                             productList = productList.concat(JSON.parse(res6));
-                            res.render("all-products", {products: productList});
+                            res.json({products: productList});
                         });
                     });
                 });
             });
         });
     });
-    // }
 })
 
 const port = process.env.PORT || 3000;

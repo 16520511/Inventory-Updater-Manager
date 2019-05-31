@@ -190,7 +190,6 @@ var c = new crawler({
 })
 
 module.exports = function runQueue() {
-    console.log('this called')
     UpdateSession.create({dateCreated: Date.now()}, (err, session) => {
             sessionId = session._id;
             c.queue(['https://www.thethaodaiviet.vn/phu-kien-tap-gym.html',

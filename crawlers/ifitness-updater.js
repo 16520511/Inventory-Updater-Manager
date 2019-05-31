@@ -149,7 +149,6 @@ var c = new crawler({
 })
 
 module.exports = function runQueue() {
-    console.log('this called');
     UpdateSession.create({dateCreated: Date.now()}, (err, session) => {
             sessionId = session._id;
             c.queue(['https://ifitness.vn/collections/phu-kien-the-thao?page=1',
