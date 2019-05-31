@@ -30,6 +30,7 @@
       
           <table id="ttdv_table" class="table display">
           </table>
+          <p style="text-align: center;">Đã cập nhật <span id="ttdv-changes-number">0</span> sản phẩm</p>
         </div>
         <div class="col s12 m6">
           <form id="ifitness_form" action="/" method="post">
@@ -38,6 +39,7 @@
       
           <table id="ifitness_table" class="table display">
           </table>
+          <p style="text-align: center;">Đã cập nhật <span id="ifitness-changes-number">0</span> sản phẩm</p>
         </div>
     </div>
 
@@ -127,6 +129,12 @@
           $('#ifitness_table').append(row);
           el.scrollTop = el.scrollHeight;
         });
+        socket.on('ttdv_changes', function(data){
+          $("#ttdv-changes-number").html(data.changes);
+        });
+        socket.on('ifitness_changes', function(data){
+          $("#ifitness-changes-number").html(data.changes);
+        })
         $(document).ready(function() {
           $(".home-item").addClass("active");
         } );

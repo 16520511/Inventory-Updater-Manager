@@ -36,6 +36,7 @@ String.prototype.replaceAll = function(search, replacement) {
 
 var sessionId;
 var counter = 0;
+var changesCounter = 0;
 var SKUList = []
 var c = new crawler({
     maxConnections: 1,
@@ -135,6 +136,7 @@ var c = new crawler({
                                                                 {
                                                                     session.changes.push(change);
                                                                     session.save();
+                                                                    io.sockets.emit('ttdv_changes', {changes: session.changes.length});
                                                                 }
                                                             })
                                                         })
@@ -144,6 +146,7 @@ var c = new crawler({
                                             else if(product.in_stock != productInStock) {
                                                 console.log('second if runs ' + productSKU);
                                                 io.sockets.emit('ttdv', {sku: productSKU, name: productName, price: productPrice, inStock: productInStock});
+                                                
                                                 var data = {
                                                     in_stock: productInStock,
                                                 }
@@ -164,6 +167,7 @@ var c = new crawler({
                                                                 {
                                                                     session.changes.push(change);
                                                                     session.save();
+                                                                    io.sockets.emit('ttdv_changes', {changes: session.changes.length});
                                                                 }
                                                             })
                                                         })

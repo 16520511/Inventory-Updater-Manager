@@ -21,6 +21,7 @@ String.prototype.replaceAll = function(search, replacement) {
 
 var sessionId;
 var counter = 0;
+var changesCounter = 0;
 
 var c = new crawler({
     maxConnections: 3,
@@ -96,6 +97,7 @@ var c = new crawler({
                                                                 {
                                                                     session.changes.push(change);
                                                                     session.save();
+                                                                    io.sockets.emit('ifitness_changes', {changes: session.changes.length});
                                                                 }
                                                             })
                                                         })
@@ -124,6 +126,7 @@ var c = new crawler({
                                                                 {
                                                                     session.changes.push(change);
                                                                     session.save();
+                                                                    io.sockets.emit('ifitness_changes', {changes: session.changes.length});
                                                                 }
                                                             })
                                                         })
