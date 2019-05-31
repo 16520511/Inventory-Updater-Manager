@@ -10,24 +10,31 @@
         font-weight: bold;
       }
       .card {
-        height: 495px;
+        height: 410px;
+      } 
+      .card-body {
+        padding: 0 0 !important;
       }
       .card-img-top {
         max-height: 180px;
         text-align: center;
       }
+
+      .list-group-item {
+        padding: 0 0 !important;
+      }
     </style>
 
     <%- include('navbar'); %>
     <div style="padding: 10px 35px;">
-    <h3 style="margin-top: 20px;" class="text-center">Lịch sử Update</h3>
+    <h3 style="margin-top: 20px;" class="text-center">LỊCH SỬ CẬP NHẬT</h3>
     <hr>
       <% changes.forEach(function(change, index){ %>
-      <% if((index+1)%4 == 1) { %>
+      <% if((index+1)%6 == 1) { %>
         <div class="row">
       <% } %>
-      <div class="col-lg-3 col-sm-12">
-        <div class="card shadow p-3 mb-5 bg-white rounded">
+      <div class="col-lg-2 col-sm-12">
+        <div class="card shadow-lg p-3 mb-5 bg-white rounded">
           <img class="card-img-top" src="<%= change.img %>">
           <div class="card-body">
             <h5 class="card-title"><a href="<%= change.link %>"><%= change.name %></a></h5>
@@ -44,7 +51,7 @@
           </ul>
         </div>
       </div>
-      <% if((index+1)%4 == 0) { %>
+      <% if((index+1)%6 == 0) { %>
       </div>
       <% } %>
       <% }); %>

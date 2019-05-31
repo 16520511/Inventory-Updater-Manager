@@ -57,7 +57,17 @@ app.post('/update-single-product', (req, res) => {
                     WooCommerce.put(`products/${product.id}`, data, function(err, data, result2) {
                         if(err) res.json({success: false});
                         else {
-                        console.log(result2);
+                        var jsonRes = JSON.parse(result2);
+                        ProductChanges.create({link: jsonRes.permalink, 
+                            name: jsonRes.name,
+                            sku: req.body.sku,
+                            priceBefore: product.price,
+                            priceAfter: req.body.price,
+                            img: jsonRes.images[0].src,
+                            inStock: inStock,
+                            time: Date.now()}, (err, change) => {
+                                console.log(change);
+                        });
                         res.json({success: true});
                         }
                     });
@@ -74,7 +84,7 @@ app.get('/history', (req, res) => {
 })
 
 app.get('/all-products', (req, res) => {
-    res.render("all-products2");
+    res.render("all-products");
 })
 
 app.post('/get-products', (req, res) => {
