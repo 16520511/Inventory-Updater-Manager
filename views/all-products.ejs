@@ -34,7 +34,7 @@
             data: {}
             }).done(function(res) {
                 console.log(res.products);
-                var tableDOM = `<table id="products_table" class="table display">
+                var tableDOM = `<table id="products_table" class="table table-hover display">
                 <thead class="thead-dark">
                   <tr>
                     <th scope="col">#</th>
@@ -55,7 +55,7 @@
                   <td contenteditable class="price-field">${res.products[i].price}</td>
                   <td contenteditable>${inStock}</td>
                   <td class="update-btn">
-                      <button class="update-click btn btn-dark" data-toggle="popover" title="Thành công" data-content="Sản phẩm đã được cập nhật">Cập nhật</button>
+                      <button class="update-click btn btn-dark" data-toggle="popover" data-trigger="manual" title="Thành công" data-content="Sản phẩm đã được cập nhật">Cập nhật</button>
                   </td>
                   </tr>`;
                 }
@@ -79,22 +79,21 @@
                   var updateClickBtn = $(".update-click").eq(index);
                   updateClickBtn.click(() => {
                     $.ajax({
-                    url: '/update-single-product',
+                    url: '/update-single-product',  
                     method: 'POST',
                     data: { sku: sku.text(), price: price.text(), inStock: inStock.text().trim() }
                     }).done(function(res) {
                         if (res.success) {
-                        updateClickBtn.attr({"data-content": "Sản phẩm đã được cập nhật", "title": "Thành công"});
+                        updateClickBtn.attr({"data-content": "Sản phẩm đã được cập nhật", "title":"Thành công", "data-original-title": "Thành công"});
                         updateClickBtn.popover('show');
                         setTimeout(function() {
                           updateClickBtn.popover("hide")}, 2200); 
                         console.log('id from ajax call is', res);
                     } else {
-                        updateClickBtn.attr({"data-content": "Lỗi cập nhật sản phẩm", "title": "Thất bại"});
+                        updateClickBtn.attr({"data-content": "Lỗi cập nhật sản phẩm", "title": "Thất bại", "data-original-title": "Thất bại"});
                         updateClickBtn.popover('show');
                         setTimeout(function() {
-                          updateClickBtn.popover("hide")}, 2200
-                          ); 
+                          updateClickBtn.popover("hide")}, 2200); 
                         console.log('error...ajax');
                         }
                   });
