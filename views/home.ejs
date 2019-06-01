@@ -19,17 +19,16 @@
       form {
         text-align: center;
       }
-
     </style>
     <%- include('navbar'); %>
     <hr>
-    <div class="row" style="padding: 20px 25px;">
+    <div class="row" style="width: 100%; padding: 20px 25px;">
       
         <div class="col s12 m6">
           <form id="ttdv_form" action="/" method="post">
             <input class="btn btn-dark" name="ttdv" type="submit" value="Chạy updater TTĐV"/>
           </form>
-      
+
           <table id="ttdv_table" class="table display">
           </table>
           <p style="text-align: center;">Đã cập nhật <span id="ttdv-changes-number">0</span> sản phẩm</p>
