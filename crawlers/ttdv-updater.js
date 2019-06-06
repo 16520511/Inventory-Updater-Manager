@@ -2,7 +2,7 @@ const crawler = require('crawler')
 global.mongoose = require('mongoose');
 const ProductChanges = require('../schema/product-changes');
 const UpdateSession = require('../schema/update-session');
-
+process.env.UV_THREADPOOL_SIZE = 128;
 mongoose.connect('mongodb://lokatto:lokatto1@ds261116.mlab.com:61116/inven-updater', {useNewUrlParser: true})
 
 const WooCommerceAPI = require('woocommerce-api');
@@ -81,7 +81,7 @@ var c = new crawler({
                                 productInStock = false;
 
                             counter++;
-                            console.log(counter + ": " + productSKU);
+                            // console.log(counter + ": " + productSKU);
 
                             if (productPrice != '' && productPrice != 'Giá Bán:Liên hệ')
                             {
@@ -108,7 +108,7 @@ var c = new crawler({
                                             SKUList.push(productSKU);
                                             if(product.price != productPrice && product.price != "" && productPrice != "Liên hệ")
                                             {
-                                                console.log('first if runs ' + productSKU + ' ' + product.slug);
+
                                                 if(product.in_stock != productInStock) {
                                                     io.sockets.emit('ttdv', {sku: productSKU, name: productName, newPrice: productPrice, inStock: productInStock});
                                                     var data = {

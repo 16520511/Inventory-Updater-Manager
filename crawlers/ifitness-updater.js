@@ -1,6 +1,7 @@
 const crawler = require('crawler')
 const ProductChanges = require('../schema/product-changes');
 const UpdateSession = require('../schema/update-session');
+process.env.UV_THREADPOOL_SIZE = 128;
 
 mongoose.connect('mongodb://lokatto:lokatto1@ds261116.mlab.com:61116/inven-updater', {useNewUrlParser: true})
 
@@ -54,7 +55,7 @@ var c = new crawler({
                             else
                                 var productInStock = false;
                             counter++;
-                            console.log(counter + ": " + productSKU);
+                            // console.log(counter + ": " + productSKU);
 
                             WooCommerce.get(`products?sku=${productSKU}`, function(err, data, res) {
                                 if (err)

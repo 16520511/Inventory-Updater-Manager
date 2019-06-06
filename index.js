@@ -2,9 +2,9 @@ const express = require('express')
 const app = express()
 const ttdvUpdater = require('./crawlers/ttdv-updater')
 const ifitnessUpdater = require('./crawlers/ifitness-updater')
+var cron = require('node-cron');
 
 const ProductChanges = require('./schema/product-changes');
-const UpdateSession = require('./schema/update-session');
 
 var server = require('http').Server(app);
 global.io = require('socket.io')(server);
@@ -14,6 +14,7 @@ app.use(express.urlencoded({extended: true}))
 
 const WooCommerceAPI = require('woocommerce-api');
 
+//Setting woocommerce API
 const WooCommerce = new WooCommerceAPI({    
   url: 'https://hoichomeo.com',
   consumerKey: 'ck_c0c2050592293ef0d22b69a874506e418662cdb4',
@@ -24,10 +25,39 @@ const WooCommerce = new WooCommerceAPI({
 
 app.get('/favicon.ico', (req, res) => res.status(204));
 
+
+//Chạy updater vào lúc 7:00 AM mỗi ngày
+cron.schedule('00 00 7 * * 0-6', () => {
+    ttdvUpdater();
+  }, {
+    timezone: 'Asia/Bangkok',
+});
+
+cron.schedule('00 04 7 * * 0-6', () => {
+    ifitnessUpdater();
+  }, {
+    timezone: 'Asia/Bangkok',
+});
+
+//Chạy updater vào lúc 7:00 PM mỗi ngày
+cron.schedule('00 03 20 * * 0-6', () => {
+    ttdvUpdater();
+  }, {
+    timezone: 'Asia/Bangkok',
+});
+
+cron.schedule('00 06 20 * * 0-6', () => {
+    ifitnessUpdater();
+  }, {
+    timezone: 'Asia/Bangkok',
+});
+
+//Route get cho trang chủ
 app.get('/', (req, res) => {
     res.render('home');
 })
 
+//Route post cho trang chủ
 app.post('/', (req, res) => {
     if (req.body.name == "ttdv")
         ttdvUpdater();
@@ -36,6 +66,7 @@ app.post('/', (req, res) => {
     res.json({success: true});
 })
 
+ //Route cho post request update 1 sản phẩm
 app.post('/update-single-product', (req, res) => {
     if(req.body.sku === undefined) res.json({success: false});
     else if(req.body.inStock != "Còn hàng" && req.body.inStock != "Hết hàng") res.json({success: false});
@@ -77,16 +108,19 @@ app.post('/update-single-product', (req, res) => {
     });
 })
 
+//Route lịch sử update
 app.get('/history', (req, res) => {
     ProductChanges.find({}).sort({time: -1}).exec((err, changes) => {
         res.render('history', {changes: changes});
     });
 })
 
+//Route hiển thị tất cả sp
 app.get('/all-products', (req, res) => {
     res.render("all-products");
 })
 
+//Route gọi đến API Woo để lấy tất cả sp
 app.post('/get-products', (req, res) => {
     var productList = []
     WooCommerce.get(`products?per_page=100&page=1`, function(err, data, res1) {
