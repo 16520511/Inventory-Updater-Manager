@@ -33,20 +33,20 @@ cron.schedule('00 00 7 * * 0-6', () => {
     timezone: 'Asia/Bangkok',
 });
 
-cron.schedule('00 04 7 * * 0-6', () => {
+cron.schedule('00 02 7 * * 0-6', () => {
     ifitnessUpdater();
   }, {
     timezone: 'Asia/Bangkok',
 });
 
 //Chạy updater vào lúc 7:00 PM mỗi ngày
-cron.schedule('00 13 20 * * 0-6', () => {
+cron.schedule('00 0 19 * * 0-6', () => {
     ttdvUpdater();
   }, {
     timezone: 'Asia/Bangkok',
 });
 
-cron.schedule('00 16 20 * * 0-6', () => {
+cron.schedule('00 02 19 * * 0-6', () => {
     ifitnessUpdater();
   }, {
     timezone: 'Asia/Bangkok',
