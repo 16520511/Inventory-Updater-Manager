@@ -133,7 +133,7 @@
         socket.on('quick-update', function(data){
           
           console.log(data);
-          let toast = `  <div id="${data.sku}toast" class="toast">
+          var toast = `<div id="${data.sku}toast" class="toast">
             <div class="toast-header">
               <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -143,8 +143,9 @@
               ${data.result}
             </div>
           </div>`;
+          if($(`#${data.sku}toast`).length > 0) {$(`#${data.sku}toast`).remove();}
           $("#toast-container").append(toast);
-          $(`.toast`).toast({delay: 1000})
+          $(`.toast`).toast({delay: 3000})
           $(`#${data.sku}toast`).toast('show');
         });
       </script>

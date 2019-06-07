@@ -3,15 +3,22 @@ const app = express()
 const ttdvUpdater = require('./crawlers/ttdv-updater')
 const ifitnessUpdater = require('./crawlers/ifitness-updater')
 let cron = require('node-cron');
+const passport = require('./passport-setting')
+const bodyParser = require('body-parser');
+const cookieSession = require('cookie-session');
+let server = require('http').Server(app);
+
+app.use(cookieSession({  name: 'session',  keys: ["secret"],  maxAge: 24 * 60 * 60 * 1000
+}))
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 const ProductChanges = require('./schema/product-changes');
 
-let server = require('http').Server(app);
 global.io = require('socket.io')(server);
 
 app.set('view engine', 'ejs')
-app.use(express.urlencoded({extended: true}))
-
 const WooCommerceAPI = require('woocommerce-api');
 
 //Setting woocommerce API
@@ -24,7 +31,6 @@ const WooCommerce = new WooCommerceAPI({
 });
 
 app.get('/favicon.ico', (req, res) => res.status(204));
-
 
 //Chạy updater mỗi 30 phút từ 7h -> 21h
 cron.schedule('0 0,30 7-21 * * *', () => {
@@ -39,13 +45,38 @@ cron.schedule('0 5,35 7-21 * * *', () => {
     timezone: 'Asia/Bangkok',
 });
 
+//Middleware kiểm tra login
+var checkLoggedIn = function (req, res, next) {
+    if(req.isAuthenticated())
+        next()
+    else
+        res.redirect("/login");
+}
+
+//Route cho login
+app.route('/login')
+.get((req, res) => {
+    if(!req.isAuthenticated())
+        res.render('login');
+    else
+        res.redirect("/")
+})
+.post(function(req, res, next) {passport.authenticate('local', function(err, user, info) {
+    if (err) { return next(err); }
+    if (!user) { return res.redirect('/login'); }
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      return res.redirect('/');
+    });
+})(req, res, next)});
+
 //Route get cho trang chủ
-app.get('/', (req, res) => {
-    res.render('home');
+app.get('/', checkLoggedIn, (req, res) => {
+    res.render('home'); 
 })
 
 //Route post cho trang chủ
-app.post('/', (req, res) => {
+app.post('/', checkLoggedIn, (req, res) => {
     if (req.body.name == "ttdv")
         ttdvUpdater();
     else if (req.body.name == "ifitness")
@@ -54,7 +85,7 @@ app.post('/', (req, res) => {
 })
 
  //Route cho post request update 1 sản phẩm
-app.post('/update-single-product', (req, res) => {
+app.post('/update-single-product', checkLoggedIn, (req, res) => {
     if(req.body.sku === undefined) res.json({success: false});
     else if(req.body.inStock != "Còn hàng" && req.body.inStock != "Hết hàng") res.json({success: false});
     else
@@ -96,19 +127,19 @@ app.post('/update-single-product', (req, res) => {
 })
 
 //Route lịch sử update
-app.get('/history', (req, res) => {
+app.get('/history', checkLoggedIn, (req, res) => {
     ProductChanges.find({}).sort({time: -1}).exec((err, changes) => {
         res.render('history', {changes: changes});
     });
 })
 
 //Route hiển thị tất cả sp
-app.get('/manual-update', (req, res) => {
+app.get('/manual-update', checkLoggedIn, (req, res) => {
     res.render("manual-update");
 })
 
 //Route gọi đến API Woo để lấy tất cả sp
-app.post('/get-products', (req, res) => {
+app.post('/get-products', checkLoggedIn, (req, res) => {
     let productList = []
     WooCommerce.get(`products?per_page=100&page=1`, function(err, data, res1) {
         productList = productList.concat(JSON.parse(res1));
@@ -131,7 +162,7 @@ app.post('/get-products', (req, res) => {
     });
 })
 
-app.post("/quick-update", (req, res) => {
+app.post("/quick-update", checkLoggedIn, (req, res) => {
     let requestProducts = req.body.bulk_update.split("\n");
     for(let i = 0; i<requestProducts.length; i++) {
         let productInfo = requestProducts[i].split("-");
@@ -200,6 +231,14 @@ app.post("/quick-update", (req, res) => {
     }
     res.json({success: true});
 })
+
+// app.get('/create-user', (req, res) => {
+//     bcrypt.hash('duchuypro', 10, function(err, hash) {
+//         User.create({username: "admin", password: hash}, (err, user) => {
+//             res.send(user);
+//         })
+//     });
+// })
 
 const port = process.env.PORT || 3000;
 server.listen(port, () => { console.log('server is running') });
