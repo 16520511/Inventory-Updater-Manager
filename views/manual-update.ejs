@@ -11,15 +11,27 @@
       }
     </style>
     <%- include('navbar'); %>
+    <hr>
+    <div id="toast-container" style="z-index: 3; position: absolute; top: 3rem; right: 0; width: 300px;"></div>  
+    <div class="container">
+      <div class="alert alert-info text-center" role="alert">
+        Cú pháp: SKU-giá mới-tình trạng. Có thể bỏ trống giá hoặc tình trạng. Mỗi sản phẩm cách nhau 1 dòng
+      </div>
+      <form id="quick-update-form" method="post">
+        <textarea id="bulk_update" style="resize: none; height: 150px;" class="form-control"></textarea><br>
+        <input class="btn btn-dark" value="Cập nhật" type="submit">
+      </form>
+    </div>
     <div id="table-container" style="padding: 15px 35px;">
-      <div style="margin-top: 10rem;" class="loading-spinner text-center">
+      <div style="margin-top: 3rem;" class="loading-spinner text-center">
         <div class="spinner-border" style="width: 3rem; height: 3rem;"  role="status">
           <span class="sr-only">Loading...</span>
         </div>
-        <h4>Đang tải dữ liệu...</h4>
+        <h4>Đang tải dữ liệu bảng sản phẩm...</h4>
       </div>
     </div>
       
+      <script src="/socket.io/socket.io.js"></script>
       <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
       <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/sl-1.3.0/datatables.min.css"/>
@@ -27,6 +39,7 @@
       <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/sl-1.3.0/datatables.min.js"></script>
       
       <script>
+      var socket = io()
       $(document).ready(function() {
         $.ajax({
             url: '/get-products',
@@ -74,7 +87,6 @@
                   var price = inStock.prev();
                   var sku = price.prev().prev();
 
-                  console.log(sku.text());
                   // if(inStock.text().trim() != "Còn hàng")
                   var updateClickBtn = $(".update-click").eq(index);
                   updateClickBtn.click(() => {
@@ -107,7 +119,34 @@
           $(".all-products-item").addClass("active");
         });
 
+        $("#quick-update-form").submit((event) => {
+          event.preventDefault();
+          $.ajax({
+            url: "/quick-update",
+            method: "post",
+            data: {
+              bulk_update: $("#bulk_update").val()
+            }
+          }).done((res) => {console.log(res.success)})
+        })
 
+        socket.on('quick-update', function(data){
+          
+          console.log(data);
+          let toast = `  <div id="${data.sku}toast" class="toast">
+            <div class="toast-header">
+              <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="toast-body">
+              ${data.result}
+            </div>
+          </div>`;
+          $("#toast-container").append(toast);
+          $(`.toast`).toast({delay: 1000})
+          $(`#${data.sku}toast`).toast('show');
+        });
       </script>
     </body>
 </html>

@@ -2,6 +2,7 @@ const crawler = require('crawler')
 const ProductChanges = require('../schema/product-changes');
 const UpdateSession = require('../schema/update-session');
 process.env.UV_THREADPOOL_SIZE = 128;
+process.env.TZ = 'Asia/Bangkok' 
 
 mongoose.connect('mongodb://lokatto:lokatto1@ds261116.mlab.com:61116/inven-updater', {useNewUrlParser: true})
 

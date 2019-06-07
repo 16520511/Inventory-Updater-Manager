@@ -2,11 +2,11 @@ const express = require('express')
 const app = express()
 const ttdvUpdater = require('./crawlers/ttdv-updater')
 const ifitnessUpdater = require('./crawlers/ifitness-updater')
-var cron = require('node-cron');
+let cron = require('node-cron');
 
 const ProductChanges = require('./schema/product-changes');
 
-var server = require('http').Server(app);
+let server = require('http').Server(app);
 global.io = require('socket.io')(server);
 
 app.set('view engine', 'ejs')
@@ -26,27 +26,14 @@ const WooCommerce = new WooCommerceAPI({
 app.get('/favicon.ico', (req, res) => res.status(204));
 
 
-//Chạy updater vào lúc 7:00 AM mỗi ngày
-cron.schedule('00 25 11 * * 0-6', () => {
+//Chạy updater mỗi 30 phút từ 7h -> 21h
+cron.schedule('0 0,30 7-21 * * *', () => {
     ttdvUpdater();
   }, {
     timezone: 'Asia/Bangkok',
 });
 
-cron.schedule('00 02 7 * * 0-6', () => {
-    ifitnessUpdater();
-  }, {
-    timezone: 'Asia/Bangkok',
-});
-
-//Chạy updater vào lúc 7:00 PM mỗi ngày
-cron.schedule('00 0 19 * * 0-6', () => {
-    ttdvUpdater();
-  }, {
-    timezone: 'Asia/Bangkok',
-});
-
-cron.schedule('00 02 19 * * 0-6', () => {
+cron.schedule('0 5,35 7-21 * * *', () => {
     ifitnessUpdater();
   }, {
     timezone: 'Asia/Bangkok',
@@ -79,16 +66,16 @@ app.post('/update-single-product', (req, res) => {
             try {
                 if(JSON.parse(result1).length == 1)
                 {
-                    var product = JSON.parse(result1)[0];
-                    var inStock = req.body.inStock == "Còn hàng" ? true : false;
-                    var data = {
+                    let product = JSON.parse(result1)[0];
+                    let inStock = req.body.inStock == "Còn hàng" ? true : false;
+                    let data = {
                         regular_price: req.body.price,
                         in_stock: inStock
                     }
                     WooCommerce.put(`products/${product.id}`, data, function(err, data, result2) {
                         if(err) res.json({success: false});
                         else {
-                        var jsonRes = JSON.parse(result2);
+                        let jsonRes = JSON.parse(result2);
                         ProductChanges.create({link: jsonRes.permalink, 
                             name: jsonRes.name,
                             sku: req.body.sku,
@@ -116,13 +103,13 @@ app.get('/history', (req, res) => {
 })
 
 //Route hiển thị tất cả sp
-app.get('/all-products', (req, res) => {
-    res.render("all-products");
+app.get('/manual-update', (req, res) => {
+    res.render("manual-update");
 })
 
 //Route gọi đến API Woo để lấy tất cả sp
 app.post('/get-products', (req, res) => {
-    var productList = []
+    let productList = []
     WooCommerce.get(`products?per_page=100&page=1`, function(err, data, res1) {
         productList = productList.concat(JSON.parse(res1));
         WooCommerce.get(`products?per_page=100&page=2`, function(err, data, res2) {
@@ -142,6 +129,76 @@ app.post('/get-products', (req, res) => {
             });
         });
     });
+})
+
+app.post("/quick-update", (req, res) => {
+    let requestProducts = req.body.bulk_update.split("\n");
+    for(let i = 0; i<requestProducts.length; i++) {
+        let productInfo = requestProducts[i].split("-");
+        console.log(productInfo);
+        if (productInfo.length != 3)
+            io.sockets.emit("quick-update", {sku: "xxxx", result: `Sai cú pháp, SKU ${productInfo[0]} không thể cập nhật`})
+        else {
+            let productSKU = productInfo[0];
+            let productPrice = productInfo[1];
+            let inStock = productInfo[2];
+            if((inStock != "Còn hàng" && inStock != "Hết hàng" && inStock != "") || (productPrice == "" && inStock == ""))
+                io.sockets.emit("quick-update", {sku: productSKU, result: `Có lỗi, SKU ${productInfo[0]} không thể cập nhật`})
+            else {
+                WooCommerce.get(`products?sku=${productSKU}`, function(err, data, result1) {
+                    if (err)
+                        io.sockets.emit("quick-update", {sku: productSKU, result: `Có lỗi, SKU ${productInfo[0]} không thể cập nhật`})
+                    if(result1 !== undefined)
+                    {
+                        try {
+                            if(JSON.parse(result1).length == 1)
+                            {
+                                let product = JSON.parse(result1)[0];
+                                if (productPrice == "") {
+                                    inStock = inStock == "Còn hàng" ? true : false;
+                                    var data1 = {
+                                        in_stock: inStock
+                                    }
+                                }
+                                else if (inStock == "") {
+                                    var data1 = {
+                                        regular_price: productPrice
+                                    }
+                                }
+                                else {
+                                    inStock = inStock == "Còn hàng" ? true : false;
+                                    var data1 = {
+                                        regular_price: productPrice,
+                                        in_stock: inStock
+                                    }
+                                }
+                                WooCommerce.put(`products/${product.id}`, data1, function(err, data2, result2) {
+                                    if(err) io.sockets.emit("quick-update", {sku: productSKU, result: `Có lỗi, SKU ${productInfo[0]} không thể cập nhật`})
+                                    else {
+                                    let jsonRes = JSON.parse(result2);
+                                    ProductChanges.create({link: jsonRes.permalink, 
+                                        name: jsonRes.name,
+                                        sku: productSKU,
+                                        priceBefore: product.price,
+                                        priceAfter: productPrice == "" ? product.price : productPrice,
+                                        img: jsonRes.images[0].src,
+                                        inStock: inStock,
+                                        time: Date.now()}, (err, change) => {
+                                            // console.log(change);
+                                    });
+                                    io.sockets.emit("quick-update", {sku: productSKU, result: `SKU ${productInfo[0]} đã được cập nhật thành công`});
+                                    }
+                                });
+                            }
+                            else io.sockets.emit("quick-update", {sku: productSKU, result: `Có lỗi, SKU ${productInfo[0]} không thể cập nhật`})
+
+                        } catch(e) {console.log(e); io.sockets.emit("quick-update", {sku: productSKU, result: `Có lỗi, SKU ${productInfo[0]} không thể cập nhật`})}
+                    }
+                });
+            }
+        }
+    }
+    res.json({success: true});
 })
 
 const port = process.env.PORT || 3000;
