@@ -27,7 +27,7 @@ app.get('/favicon.ico', (req, res) => res.status(204));
 
 
 //Chạy updater vào lúc 7:00 AM mỗi ngày
-cron.schedule('00 00 7 * * 0-6', () => {
+cron.schedule('00 25 11 * * 0-6', () => {
     ttdvUpdater();
   }, {
     timezone: 'Asia/Bangkok',
