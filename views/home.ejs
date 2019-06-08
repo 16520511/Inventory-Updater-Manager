@@ -24,7 +24,10 @@
     </style>
     <%- include('navbar'); %>
     <div class="alert alert-success text-center" role="alert">
-      Các updater sẽ tự động chạy mỗi 30 phút từ 7:00 AM tới 9:00 PM mỗi ngày
+      <% if(time) { %>
+        Các updater sẽ tự động chạy vào <%= time %> mỗi ngày <% } else{ %>
+        Các updater sẽ tự động chạy mỗi <%= every %> phút từ 6:00 AM tới 11:00 PM mỗi ngày <% } %>
+      
     </div>
     <div class="container">
     <p>
@@ -35,32 +38,32 @@
     <div class="collapse" id="collapseExample">
       <div class="card card-body">
         <div class="row">
-        <form id="time-form-1" class="col-6"><div class="form-row">
+        <form action="update-timing" method="post" id="time-form-1" class="col-6"><div class="form-row">
             <div class="input-group mb-3 col-9">
               <div class="input-group-prepend">
                   <label class="input-group-text" for="inputGroupSelect01">Chạy mỗi</label>
               </div>
-              <select class="every-select form-control" id="inputGroupSelect01">
-                <option selected>30 phút</option>
-                <option value="1">1 tiếng</option>
-                <option value="2">2 tiếng</option>
-                <option value="5">5 tiếng</option>
+              <select name="every" class="every-select form-control" id="inputGroupSelect01">
+                <option value="2">2 phút</option>
+                <option value="3">3 phút</option>
+                <option value="4">4 phút</option>
+                <option value="5">5 phút</option>
+                <option selected value="30">30 phút</option>
+                <option value="60">1 tiếng</option>
+                <option value="120">2 tiếng</option>
+                <option value="300">5 tiếng</option>
                 <option value="">Không chọn</option>
               </select>
           </div>
           <button style="height: 38px;" type="submit" class="btn btn-primary col-3">Cập nhật</button></div>
         </form>
-        <form id="time-form-2" class="col-6"><div class="form-row">
+        <form action="update-timing" method="post" id="time-form-2" class="col-6"><div class="form-row">
         <div class="input-group mb-3 col-9">
             <div class="input-group-prepend">
                 <label class="input-group-text">Cố định</label>
             </div>
-            <input class="text-center form-control" type="number" max="12" min="1" value="7" required>
-            <input class="text-center form-control" type="number" max="59" min="00" value="00" required>
-            <select class="form-control fixed-select">
-              <option value="AM">AM</option>
-              <option value="PM">PM</option>
-            </select>
+            <input name="hour" class="text-center form-control" type="number" max="23" min="0" placeholder="giờ" required>
+            <input name="minute" class="text-center form-control" type="number" max="59" min="00" placeholder="phút" required>
         </div>
         <button style="height: 38px;" type="submit" class="btn btn-primary col-3">Cập nhật</button>
         </div>
@@ -68,8 +71,8 @@
       </div>
     </div>
     </div>
-    <div class="row">
-      
+    </div>
+    <div style="padding: 10px 5rem;" class="row">
         <div class="col-sm-12 col-lg-6">
           <form id="ttdv_form" action="/" method="post">
             <input class="btn btn-dark" name="ttdv" type="submit" value="Chạy updater TTĐV"/>

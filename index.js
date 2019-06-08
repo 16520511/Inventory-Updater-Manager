@@ -9,24 +9,48 @@ const cookieSession = require('cookie-session');
 let server = require('http').Server(app);
 
 const UpdateTiming = require('./schema/update-timing');
+var task1;
+var task2;
 //Chạy update tự động
-UpdateTiming.findOne({}, (err, time) => {
-    if(time.everyMinute != null) {
-        cron.schedule(`0 */${time.everyMinute} 6-22 * * *`, () => {
-            console.log("cron1 running");
-            ttdvUpdater()
-        }, {
-            timezone: 'Asia/Bangkok',
-        });
+function runUpdateAutomatically() {
+    UpdateTiming.findOne({}, (err, time) => {
+        console.log(time);
+        if(time.everyMinute != null) {
+            task1 = cron.schedule(`0 */${time.everyMinute} 6-23 * * *`, () => {
+                console.log("cron1 running");
+                ttdvUpdater()
+            }, {
+                timezone: 'Asia/Bangkok',
+            });
 
-        cron.schedule(`0 */${time.everyMinute+5} 6-22 * * *`, () => {
-            console.log("cron2 running");
-            ifitnessUpdater();
-        }, {
-            timezone: 'Asia/Bangkok',
-        });
-    }
-})
+            task2 = cron.schedule(`0 */${time.everyMinute+2} 6-23 * * *`, () => {
+                console.log("cron2 running");
+                ifitnessUpdater();
+            }, {
+                timezone: 'Asia/Bangkok',
+            });
+        }
+        else {
+            task1 = cron.schedule(`0 ${time.minute} ${time.hour} * * *`, () => {
+                console.log("cron1 running");
+                ttdvUpdater()
+            }, {
+                timezone: 'Asia/Bangkok',
+            });
+            console.log(`0 ${time.minute+5} ${time.hour} * * *`);
+            task2 = cron.schedule(`0 ${time.minute+5} ${time.hour} * * *`, () => {
+                console.log("cron2 running");
+                ifitnessUpdater();
+            }, {
+                timezone: 'Asia/Bangkok',
+            });
+        }
+        task1.start();
+        task2.start();
+    })
+}
+
+runUpdateAutomatically()
 
 app.use(cookieSession({  name: 'session',  keys: ["secret"],  maxAge: 60 * 60 * 1000
 }))
@@ -52,9 +76,9 @@ const WooCommerce = new WooCommerceAPI({
 
 app.get('/favicon.ico', (req, res) => res.status(204));
 
-// app.get('/test', (req, res) => {
-//     UpdateTiming.findOne({everyMinute: 1}, (err, time) => {time.everyMinute = 30; time.save()})
-// })
+app.get('/test', (req, res) => {
+    UpdateTiming.findOne({}, (err, time) => {time.everyMinute = 5; time.save()})
+})
 
 
 //Middleware kiểm tra login
@@ -84,7 +108,10 @@ app.route('/login')
 
 //Route get cho trang chủ
 app.get('/', checkLoggedIn, (req, res) => {
-    res.render('home'); 
+    UpdateTiming.findOne({}, (err, time) => {
+        if(time.everyMinute != null)    res.render('home', {every: time.everyMinute, time: null});
+        else res.render('home', {every: null, time: `${time.hour} giờ ${time.minute} phút`});
+    })
 })
 
 //Route post cho trang chủ
@@ -98,7 +125,22 @@ app.post('/', checkLoggedIn, (req, res) => {
 
 app.post("/update-timing", checkLoggedIn, (req, res) => {
     if (req.body.every != undefined)
-        res.redirect('/');
+        UpdateTiming.updateOne({}, {everyMinute: Number(req.body.every),
+            hour: null,
+            minute: null}, (err, time) => {
+            task1.stop();
+            task2.stop();
+            runUpdateAutomatically();
+            res.redirect('/')});
+    else if (req.body.hour != undefined) {
+        UpdateTiming.updateOne({}, {everyMinute: null, 
+            hour: Number(req.body.hour),
+            minute: Number(req.body.minute)}, (err, time) => {
+            task1.stop();
+            task2.stop();
+            runUpdateAutomatically();
+            res.redirect('/')});
+    }
 })
 
  //Route cho post request update 1 sản phẩm
