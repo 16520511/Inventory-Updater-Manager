@@ -8,7 +8,27 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 let server = require('http').Server(app);
 
-app.use(cookieSession({  name: 'session',  keys: ["secret"],  maxAge: 24 * 60 * 60 * 1000
+const UpdateTiming = require('./schema/update-timing');
+//Chạy update tự động
+UpdateTiming.findOne({}, (err, time) => {
+    if(time.everyMinute != null) {
+        cron.schedule(`0 */${time.everyMinute} 6-22 * * *`, () => {
+            console.log("cron1 running");
+            ttdvUpdater()
+        }, {
+            timezone: 'Asia/Bangkok',
+        });
+
+        cron.schedule(`0 */${time.everyMinute+5} 6-22 * * *`, () => {
+            console.log("cron2 running");
+            ifitnessUpdater();
+        }, {
+            timezone: 'Asia/Bangkok',
+        });
+    }
+})
+
+app.use(cookieSession({  name: 'session',  keys: ["secret"],  maxAge: 60 * 60 * 1000
 }))
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(passport.initialize());
@@ -32,18 +52,10 @@ const WooCommerce = new WooCommerceAPI({
 
 app.get('/favicon.ico', (req, res) => res.status(204));
 
-//Chạy updater mỗi 30 phút từ 7h -> 21h
-cron.schedule('0 0,30 7-21 * * *', () => {
-    ttdvUpdater();
-  }, {
-    timezone: 'Asia/Bangkok',
-});
+// app.get('/test', (req, res) => {
+//     UpdateTiming.findOne({everyMinute: 1}, (err, time) => {time.everyMinute = 30; time.save()})
+// })
 
-cron.schedule('0 5,35 7-21 * * *', () => {
-    ifitnessUpdater();
-  }, {
-    timezone: 'Asia/Bangkok',
-});
 
 //Middleware kiểm tra login
 var checkLoggedIn = function (req, res, next) {
@@ -82,6 +94,11 @@ app.post('/', checkLoggedIn, (req, res) => {
     else if (req.body.name == "ifitness")
         ifitnessUpdater();
     res.json({success: true});
+})
+
+app.post("/update-timing", checkLoggedIn, (req, res) => {
+    if (req.body.every != undefined)
+        res.redirect('/');
 })
 
  //Route cho post request update 1 sản phẩm
@@ -230,6 +247,11 @@ app.post("/quick-update", checkLoggedIn, (req, res) => {
         }
     }
     res.json({success: true});
+})
+
+app.get('/logout', checkLoggedIn, (req, res) => {
+    req.logOut();
+    res.redirect("/login");
 })
 
 // app.get('/create-user', (req, res) => {

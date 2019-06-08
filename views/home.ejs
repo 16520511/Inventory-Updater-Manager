@@ -1,5 +1,6 @@
 <html>
   <head>
+      <script src="https://kit.fontawesome.com/8297507d5e.js"></script>
   </head>
   <body>
     <style>
@@ -25,10 +26,51 @@
     <div class="alert alert-success text-center" role="alert">
       Các updater sẽ tự động chạy mỗi 30 phút từ 7:00 AM tới 9:00 PM mỗi ngày
     </div>
-
+    <div class="container">
+    <p>
+      <a class="btn btn-dark text-light" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+        Cài đặt thời gian <i style="font-size: 1.5em;" class="fas fa-cog"></i>
+      </a>
+    </p>
+    <div class="collapse" id="collapseExample">
+      <div class="card card-body">
+        <div class="row">
+        <form id="time-form-1" class="col-6"><div class="form-row">
+            <div class="input-group mb-3 col-9">
+              <div class="input-group-prepend">
+                  <label class="input-group-text" for="inputGroupSelect01">Chạy mỗi</label>
+              </div>
+              <select class="every-select form-control" id="inputGroupSelect01">
+                <option selected>30 phút</option>
+                <option value="1">1 tiếng</option>
+                <option value="2">2 tiếng</option>
+                <option value="5">5 tiếng</option>
+                <option value="">Không chọn</option>
+              </select>
+          </div>
+          <button style="height: 38px;" type="submit" class="btn btn-primary col-3">Cập nhật</button></div>
+        </form>
+        <form id="time-form-2" class="col-6"><div class="form-row">
+        <div class="input-group mb-3 col-9">
+            <div class="input-group-prepend">
+                <label class="input-group-text">Cố định</label>
+            </div>
+            <input class="text-center form-control" type="number" max="12" min="1" value="7" required>
+            <input class="text-center form-control" type="number" max="59" min="00" value="00" required>
+            <select class="form-control fixed-select">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+        </div>
+        <button style="height: 38px;" type="submit" class="btn btn-primary col-3">Cập nhật</button>
+        </div>
+      </form>
+      </div>
+    </div>
+    </div>
     <div class="row">
       
-        <div class="col s12 m6">
+        <div class="col-sm-12 col-lg-6">
           <form id="ttdv_form" action="/" method="post">
             <input class="btn btn-dark" name="ttdv" type="submit" value="Chạy updater TTĐV"/>
           </form>
@@ -37,7 +79,7 @@
           </table>
           <p style="text-align: center;">Đã cập nhật <span id="ttdv-changes-number">0</span> sản phẩm</p>
         </div>
-        <div class="col s12 m6">
+        <div class="col-sm-12 col-lg-6">
           <form id="ifitness_form" action="/" method="post">
             <input class="btn btn-dark" name="ttdv" type="submit" value="Chạy updater iFitness"/>
           </form>
@@ -47,9 +89,6 @@
           <p style="text-align: center;">Đã cập nhật <span id="ifitness-changes-number">0</span> sản phẩm</p>
         </div>
     </div>
-
-
-
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
