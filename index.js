@@ -192,6 +192,18 @@ app.get('/history', checkLoggedIn, (req, res) => {
     });
 })
 
+//Route request xóa lịch sử
+app.post('/delete-history', checkLoggedIn, (req, res) => {
+    ProductChanges.find({}).sort({time: -1}).exec((err, changes) => {
+        for(let i = 0; i<req.body.indexes.length; i++) {
+            let index = Number(req.body.indexes[i]);
+            changes[index].remove();
+        }
+        res.json({success: true});
+    });
+})
+
+
 //Route hiển thị tất cả sp
 app.get('/manual-update', checkLoggedIn, (req, res) => {
     res.render("manual-update");

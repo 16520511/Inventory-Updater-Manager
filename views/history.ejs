@@ -35,19 +35,28 @@
 
     <%- include('navbar'); %>
     <div style="padding: 10px 35px;">
-    <h3 style="margin-top: 20px;" class="text-center">LỊCH SỬ CẬP NHẬT</h3>
-    <hr>
-    <button style="margin-bottom: 15px;" class="btn btn-dark change-type-btn">Xem dạng hình ảnh</button>
-      <div class="short-list">
+      <h3 style="margin-top: 20px;" class="text-center">LỊCH SỬ CẬP NHẬT</h3>
+      <hr>
+      <button style="margin-bottom: 15px;" class="btn btn-dark change-type-btn">Xem dạng hình ảnh</button>
+      <div class="short-list mb-3">
+        <div class="row">
+        <div style="text-align: right;" class="col-2 offset-8"><button class="delete-history-btn btn btn-danger">Xóa đã chọn</button></div>
+        <div style="padding-top: 7px;" class="form-check-lg text-right col-2">
+          <input style="width: 1.1em; height:1.10em; cursor: pointer;" class="form-check-input" type="checkbox" id="select-all">
+          <label class="form-check-label" for="select-all">
+            Chọn tất cả
+          </label>
+        </div></div>
         <div class="font-weight-bold short-list-item row">
-            <div class="col-6">Tên sản phẩm</div>
+            <div class="col-5">Tên sản phẩm</div>
             <div class="col-2">Giá</div>
             <div class="col-2">Tình trạng</div>
             <div class="col-2">Thời gian</div>
+            <div class="col-1">Chọn</div>
         </div>
         <% changes.forEach(function(change, index){ %>
         <div class="short-list-item row">
-          <div class="col-6"><a href="<%= change.link %>"><%= change.name %></a></div>
+          <div class="col-5"><a href="<%= change.link %>"><%= change.name %></a></div>
           <div class="col-2"><% if(change.priceBefore != change.priceAfter){ %>
             <span class="price-after"><%= change.priceAfter %> VNĐ</span>
             <% } else{ %>  
@@ -56,6 +65,9 @@
           <div class="col-2"><% if(change.inStock == true) { %> Còn hàng <% } else{ %> Hết hàng <% } %></div>
           <div class="col-2"><%= change.time.toLocaleDateString() %>
             <%= change.time.getHours() %>:<%= String(change.time.getMinutes()).padStart(2, '0') %></div>
+          <div class="form-check-lg text-center col-1">
+            <input style="width: 1.1em; height:1.10em; cursor: pointer;" class="form-check-input" type="checkbox" value="" id="check<%= index %>">
+          </div>
         </div>
         <% }); %>
       </div>
@@ -85,6 +97,7 @@
     </div>
     </div>
     </div>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         $(document).ready(function() {
           $(".history-item").addClass("active");
@@ -97,6 +110,32 @@
           $(".short-list").toggle();
           $(".advance-list").toggle();
         })
+
+        $(".delete-history-btn").click(() => {
+          
+          let indexes = []
+          $('.form-check-input:checkbox:checked').each((index, value) => {
+            let i = Number($(value).attr("id").split("check")[1]);
+            indexes.push(i);
+          })
+          $.ajax({
+            url: "/delete-history",
+            method: "post",
+            data: {
+              indexes: indexes
+            }
+          }).done(res => {
+            $('.form-check-input:checkbox:checked').parent().parent().remove()})
+        })
+
+        $("#select-all").change(function() {
+          if(this.checked) {
+            $('.form-check-input').prop('checked', true);
+          }
+          else {
+            $('.form-check-input').prop('checked', false);
+          }
+        });
     </script>
   </body>
 </html>
