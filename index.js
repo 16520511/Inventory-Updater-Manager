@@ -37,8 +37,8 @@ function runUpdateAutomatically() {
             }, {
                 timezone: 'Asia/Bangkok',
             });
-            console.log(`0 ${time.minute+5} ${time.hour} * * *`);
-            task2 = cron.schedule(`0 ${time.minute+5} ${time.hour} * * *`, () => {
+            console.log(`0 ${time.minute+3} ${time.hour} * * *`);
+            task2 = cron.schedule(`0 ${time.minute+3} ${time.hour} * * *`, () => {
                 console.log("cron2 running");
                 ifitnessUpdater();
             }, {
@@ -203,7 +203,6 @@ app.post('/delete-history', checkLoggedIn, (req, res) => {
     });
 })
 
-
 //Route hiển thị tất cả sp
 app.get('/manual-update', checkLoggedIn, (req, res) => {
     res.render("manual-update");
@@ -236,7 +235,7 @@ app.post('/get-products', checkLoggedIn, (req, res) => {
 app.post("/quick-update", checkLoggedIn, (req, res) => {
     let requestProducts = req.body.bulk_update.split("\n");
     for(let i = 0; i<requestProducts.length; i++) {
-        let productInfo = requestProducts[i].split("-");
+        let productInfo = requestProducts[i].split("/");
         console.log(productInfo);
         if (productInfo.length != 3)
             io.sockets.emit("quick-update", {sku: "xxxx", result: `Sai cú pháp, SKU ${productInfo[0]} không thể cập nhật`})
@@ -263,6 +262,7 @@ app.post("/quick-update", checkLoggedIn, (req, res) => {
                                     }
                                 }
                                 else if (inStock == "") {
+                                    inStock = product.in_stock;
                                     var data1 = {
                                         regular_price: productPrice
                                     }
@@ -286,7 +286,8 @@ app.post("/quick-update", checkLoggedIn, (req, res) => {
                                         img: jsonRes.images[0].src,
                                         inStock: inStock,
                                         time: Date.now()}, (err, change) => {
-                                            // console.log(change);
+                                            console.log(err);
+                                            console.log(change);
                                     });
                                     io.sockets.emit("quick-update", {sku: productSKU, result: `SKU ${productInfo[0]} đã được cập nhật thành công`});
                                     }

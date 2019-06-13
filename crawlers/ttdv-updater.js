@@ -55,6 +55,7 @@ var c = new crawler({
                 c2.queue([{
                     uri: 'https://www.thethaodaiviet.vn/' + href,
                     jQuery: true,
+                    timeout: 30000,
                     callback: function (error, res, done) {
                         if(error){
                             console.log(error);
